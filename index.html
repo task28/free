@@ -3,162 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>User Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f4f6f9; margin: 0; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            color: white;
+            padding: 25px 20px 60px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .user-info h3 { margin: 0; font-size: 20px; font-weight: 600; }
+        .user-info p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
         
-        /* Navbar */
-        .navbar { background: #2c3e50; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h2 { margin: 0; font-size: 22px; }
-        .logout { background: #e74c3c; border: none; padding: 8px 15px; color: white; border-radius: 5px; cursor: pointer; }
+        .logout-btn {
+            position: absolute;
+            top: 25px;
+            right: 20px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
 
-        .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
+        /* Balance Card */
+        .balance-card {
+            background: white;
+            width: 88%;
+            margin: -40px auto 25px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
 
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
-        .stat-card h3 { margin: 0; color: #2c3e50; font-size: 30px; }
-        .stat-card p { color: #7f8c8d; margin: 5px 0 0; }
+        .balance-card h2 { margin: 5px 0; color: #27ae60; font-size: 36px; font-weight: 700; }
+        .balance-card span { color: #95a5a6; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .task-badge { 
+            background: #eef2f3; color: #333; 
+            padding: 5px 12px; border-radius: 15px; 
+            font-size: 12px; display: inline-block; margin-top: 10px; font-weight: 600;
+        }
 
-        /* Settings Section */
-        .section-title { border-left: 5px solid #3498db; padding-left: 10px; margin-bottom: 20px; color: #333; }
+        .container { width: 90%; margin: 0 auto; }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 18px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
         
-        .settings-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-save { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .card h4 { margin: 0 0 15px; color: #444; font-weight: 600; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px; }
 
-        /* Page Links Grid */
-        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .link-btn { background: #34495e; color: white; padding: 15px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: 0.3s; }
-        .link-btn:hover { background: #2c3e50; transform: translateY(-3px); }
-        .user-btn { background: #8e44ad; }
+        /* Buttons */
+        .btn-start {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+            transition: 0.3s;
+        }
+        .btn-start:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; color: #fff; }
+
+        .timer-display { font-size: 14px; color: #e74c3c; margin-top: 12px; font-weight: 600; }
+
+        /* Submit Code Section (Hidden by Default) */
+        #submit-card { display: none; border: 2px solid #27ae60; }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #eef2f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            outline: none;
+            text-align: center;
+            font-size: 16px;
+            letter-spacing: 2px;
+            background: #f9fbfd;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        /* Withdraw */
+        .withdraw-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+            background: #fff;
+        }
+        .btn-withdraw {
+            width: 100%;
+            padding: 14px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3);
+        }
+
+        #msg-box { margin-top: 10px; font-weight: 500; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="navbar">
-    <h2>Admin Dashboard</h2>
-    <button class="logout" onclick="logout()">Logout</button>
-</div>
-
-<div class="container">
-    
-    <!-- Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3 id="total-users">0</h3>
-            <p>Total Users</p>
+    <div class="header">
+        <div class="user-info">
+            <h3 id="display-name">Loading...</h3>
+            <p id="display-phone">...</p>
         </div>
-        <div class="stat-card">
-            <h3 id="total-withdrawals">0</h3>
-            <p>Pending Withdrawals</p>
-        </div>
-        <a href="admin_users.html" class="stat-card" style="text-decoration:none; background:#e8f6f3;">
-            <h3 style="color:#27ae60;">View</h3>
-            <p>All Users List</p>
-        </a>
+        <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
-    <!-- Global Settings -->
-    <div class="settings-card">
-        <h3 class="section-title">Global Settings</h3>
-        <div class="form-group">
-            <label>Task Reward Amount ($):</label>
-            <input type="number" id="reward" step="0.01" placeholder="Ex: 0.50">
-        </div>
-        <div class="form-group">
-            <label>Minimum Withdraw Limit ($):</label>
-            <input type="number" id="limit" step="0.50" placeholder="Ex: 5.00">
-        </div>
-        <div class="form-group">
-            <label>Task Cooldown (Minutes):</label>
-            <input type="number" id="cooldown" placeholder="Ex: 60">
-        </div>
-        <button class="btn-save" onclick="saveGlobal()">Update Settings</button>
+    <div class="balance-card">
+        <span>Total Balance</span>
+        <h2 id="balance-amount">$0.00</h2>
+        <div class="task-badge">Tasks Done: <span id="completed-tasks">0</span></div>
     </div>
 
-    <!-- Page Management Links -->
-    <h3 class="section-title">Manage Task Pages</h3>
-    <div class="links-grid">
-        <a href="page_1_admin.html" class="link-btn">Page 1 Setup</a>
-        <a href="page_2_admin.html" class="link-btn">Page 2 Setup</a>
-        <a href="page_3_admin.html" class="link-btn">Page 3 Setup</a>
-        <a href="page_4_admin.html" class="link-btn">Page 4 Setup</a>
-        <a href="page_5_admin.html" class="link-btn">Page 5 Setup</a>
-        <a href="page_6_admin.html" class="link-btn">Page 6 Setup</a>
-        <a href="page_7_admin.html" class="link-btn">Page 7 Setup</a>
-        <a href="page_8_admin.html" class="link-btn">Page 8 Setup</a>
-        <a href="page_9_admin.html" class="link-btn">Page 9 Setup</a>
-        <a href="page_10_admin.html" class="link-btn" style="background:#e74c3c;">Page 10 (Code)</a>
+    <div class="container">
+        
+        <!-- Task Start Section -->
+        <div class="card">
+            <h4>Daily Task</h4>
+            <button id="start-btn" class="btn-start" onclick="startTask()">Start Task</button>
+            <div id="timer-display" class="timer-display"></div>
+        </div>
+
+        <!-- Submit Code Section (Initially Hidden) -->
+        <div class="card" id="submit-card">
+            <h4>Submit Verification Code</h4>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Paste the code from Page 10 to get paid.</p>
+            <div class="input-group">
+                <input type="text" id="task-code" placeholder="Enter Code Here">
+                <button class="btn-submit" onclick="submitCode()">Claim Reward</button>
+            </div>
+            <div id="msg-box"></div>
+        </div>
+
+        <!-- Withdraw Section -->
+        <div class="card">
+            <h4>Withdraw Earnings</h4>
+            <input type="text" id="w-id" class="withdraw-input" placeholder="Enter Task28 ID">
+            <input type="number" id="w-amount" class="withdraw-input" placeholder="Amount ($)">
+            <button class="btn-withdraw" onclick="requestWithdraw()">Withdraw Money</button>
+            <p style="font-size:12px; color:#999; margin-top:10px;">Min Withdraw: $<span id="min-withdraw">5.00</span></p>
+        </div>
+
     </div>
 
-</div>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, get, child, push, remove, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
+            authDomain: "task-310c5.firebaseapp.com",
+            projectId: "task-310c5",
+            storageBucket: "task-310c5.firebasestorage.app",
+            messagingSenderId: "503757001786",
+            appId: "1:503757001786:web:3ba0943c3367c273de9103"
+        };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
-    authDomain: "task-310c5.firebaseapp.com",
-    projectId: "task-310c5",
-    storageBucket: "task-310c5.firebasestorage.app",
-    messagingSenderId: "503757001786",
-    appId: "1:503757001786:web:3ba0943c3367c273de9103"
-  };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+        const userPhone = localStorage.getItem("userPhone");
+        if (!userPhone) window.location.href = "index.html";
 
-  // Security Check
-  if(localStorage.getItem("adminAuth") !== "true"){
-      window.location.href = "admin_login.html";
-  }
+        const userRef = ref(db, 'users/' + userPhone);
 
-  // Load Settings
-  onValue(ref(db, 'admin_settings'), (snap) => {
-      const data = snap.val() || {};
-      document.getElementById('reward').value = data.task_reward || 0.50;
-      document.getElementById('limit').value = data.min_withdraw || 5.00;
-      document.getElementById('cooldown').value = data.cooldown_minutes || 60;
-  });
+        // ১. সাবমিট বক্স শো করার লজিক
+        // আমরা Page 10 এ localStorage.setItem("taskReady", "true") সেট করব।
+        if (localStorage.getItem("taskReady") === "true") {
+            document.getElementById("submit-card").style.display = "block";
+            // সাবমিট অপশন আসলে Start Task বাটন ডিজেবল রাখা ভালো যাতে একসাথে দুইটা না চলে
+            document.getElementById("start-btn").disabled = true;
+            document.getElementById("start-btn").innerText = "Submit Code First";
+        }
 
-  // Count Users
-  onValue(ref(db, 'users'), (snap) => {
-      document.getElementById('total-users').innerText = snap.size || 0;
-  });
+        // ২. ইউজারের ডেটা লোড
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('display-name').innerText = data.name;
+                document.getElementById('display-phone').innerText = data.phone;
+                document.getElementById('balance-amount').innerText = '$' + parseFloat(data.balance).toFixed(2);
+                document.getElementById('completed-tasks').innerText = data.total_tasks;
+                
+                // যদি সাবমিট বক্স শো না থাকে, তবেই টাইমার চেক করবে
+                if (localStorage.getItem("taskReady") !== "true") {
+                    checkCooldown(data.last_task_time);
+                }
+            }
+        });
 
-  // Count Withdrawals
-  onValue(ref(db, 'withdrawals'), (snap) => {
-      let pending = 0;
-      snap.forEach(child => {
-          if(child.val().status === 'pending') pending++;
-      });
-      document.getElementById('total-withdrawals').innerText = pending;
-  });
+        // ৩. টাইমার লজিক
+        function checkCooldown(lastTime) {
+            get(child(ref(db), 'admin_settings')).then((snap) => {
+                const settings = snap.val() || {};
+                const cooldownMins = settings.cooldown_minutes || 60; 
+                const now = Date.now();
+                const diff = now - lastTime;
+                const cooldownMs = cooldownMins * 60 * 1000;
 
-  window.saveGlobal = function() {
-      const reward = parseFloat(document.getElementById('reward').value);
-      const limit = parseFloat(document.getElementById('limit').value);
-      const cooldown = parseInt(document.getElementById('cooldown').value);
+                const startBtn = document.getElementById('start-btn');
+                const timerDisplay = document.getElementById('timer-display');
 
-      update(ref(db, 'admin_settings'), {
-          task_reward: reward,
-          min_withdraw: limit,
-          cooldown_minutes: cooldown
-      }).then(() => alert("Settings Updated!"));
-  }
+                if (diff < cooldownMs) {
+                    startBtn.disabled = true;
+                    startBtn.innerText = "Wait for Next Task";
+                    
+                    const timeLeft = cooldownMs - diff;
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    timerDisplay.innerText = `Available in: ${minutes}m ${seconds}s`;
+                    
+                    setTimeout(() => checkCooldown(lastTime), 1000);
+                } else {
+                    startBtn.disabled = false;
+                    startBtn.innerText = "Start Task";
+                    timerDisplay.innerText = "";
+                }
+            });
+        }
 
-  window.logout = function() {
-      localStorage.removeItem("adminAuth");
-      window.location.href = "admin_login.html";
-  }
-</script>
+        window.startTask = function() {
+            window.location.href = "page1.html";
+        }
 
+        // ৪. কোড সাবমিট ফাংশন (আপডেট করা হয়েছে)
+        window.submitCode = function() {
+            const code = document.getElementById('task-code').value.trim();
+            const msgBox = document.getElementById('msg-box');
+            const btn = document.querySelector('.btn-submit');
+
+            if (!code) {
+                msgBox.innerHTML = "<span style='color:red'>Please paste the code!</span>";
+                return;
+            }
+            
+            btn.innerText = "Checking...";
+            btn.disabled = true;
+
+            get(child(ref(db), `generated_codes/${code}`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const codeData = snapshot.val();
+
+                    // কোড চেক: অব্যবহৃত কিনা এবং এই ইউজারের জন্যই কিনা
+                    if (codeData.status === "unused" && codeData.user === userPhone) {
+                        
+                        get(child(ref(db), 'admin_settings/task_reward')).then((rSnap) => {
+                            const reward = parseFloat(rSnap.val() || 0.50); 
+                            
+                            get(userRef).then((uSnap) => {
+                                const currentBal = parseFloat(uSnap.val().balance);
+                                const currentTasks = parseInt(uSnap.val().total_tasks);
+
+                                // আপডেট ব্যালেন্স ও টাস্ক কাউন্ট
+                                update(userRef, {
+                                    balance: currentBal + reward,
+                                    total_tasks: currentTasks + 1,
+                                    last_task_time: Date.now() 
+                                });
+
+                                // কোড রিমুভ করে দেওয়া
+                                remove(ref(db, `generated_codes/${code}`));
+
+                                // সাকসেস মেসেজ এবং রিসেট
+                                alert("Congratulations! $" + reward + " Added.");
+                                
+                                // লোকাল স্টোরেজ থেকে ফ্ল্যাগ ডিলিট যাতে সাবমিট বক্স আর না দেখায়
+                                localStorage.removeItem("taskReady");
+                                
+                                // পেজ রিলোড দিলে UI আপডেট হয়ে যাবে
+                                window.location.reload();
+                            });
+                        });
+                    } else {
+                        msgBox.innerHTML = "<span style='color:red'>Invalid or Used Code!</span>";
+                        btn.innerText = "Try Again";
+                        btn.disabled = false;
+                    }
+                } else {
+                    msgBox.innerHTML = "<span style='color:red'>Wrong Code!</span>";
+                    btn.innerText = "Try Again";
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        window.requestWithdraw = function() {
+            const wid = document.getElementById('w-id').value;
+            const amount = parseFloat(document.getElementById('w-amount').value);
+            
+            if(!wid || !amount) { alert("Fill all fields"); return; }
+
+            get(child(ref(db), 'admin_settings/min_withdraw')).then((snap) => {
+                const limit = parseFloat(snap.val() || 5.00);
+                
+                get(userRef).then((userSnap) => {
+                    const myBal = parseFloat(userSnap.val().balance);
+
+                    if (myBal >= amount && amount >= limit) {
+                        const withdrawRef = ref(db, 'withdrawals');
+                        const newWithdraw = push(withdrawRef);
+                        set(newWithdraw, {
+                            user: userPhone,
+                            name: userSnap.val().name,
+                            task_id: wid,
+                            amount: amount,
+                            status: "pending",
+                            date: Date.now()
+                        });
+                        update(userRef, { balance: myBal - amount });
+                        alert("Withdrawal request sent!");
+                        window.location.reload();
+                    } else {
+                        alert(`Insufficient balance or below limit ($${limit})`);
+                    }
+                });
+            });
+        }
+
+        window.logout = function() {
+            localStorage.removeItem("userPhone");
+            window.location.href = "index.html";
+        }
+
+        window.startTask = startTask;
+        window.submitCode = submitCode;
+        window.requestWithdraw = requestWithdraw;
+        window.logout = logout;
+    </script>
 </body>
 </html>
