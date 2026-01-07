@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f4f6f9; margin: 0; }
+        
+        /* Navbar */
+        .navbar { background: #2c3e50; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; font-size: 22px; }
+        .logout { background: #e74c3c; border: none; padding: 8px 15px; color: white; border-radius: 5px; cursor: pointer; }
+
+        .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
+
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; }
+        .stat-card h3 { margin: 0; color: #2c3e50; font-size: 30px; }
+        .stat-card p { color: #7f8c8d; margin: 5px 0 0; }
+
+        /* Settings Section */
+        .section-title { border-left: 5px solid #3498db; padding-left: 10px; margin-bottom: 20px; color: #333; }
+        
+        .settings-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-save { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+
+        /* Page Links Grid */
+        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .link-btn { background: #34495e; color: white; padding: 15px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: 0.3s; }
+        .link-btn:hover { background: #2c3e50; transform: translateY(-3px); }
+        .user-btn { background: #8e44ad; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <h2>Admin Dashboard</h2>
+    <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+    
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3 id="total-users">0</h3>
+            <p>Total Users</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="total-withdrawals">0</h3>
+            <p>Pending Withdrawals</p>
+        </div>
+        <a href="admin_users.html" class="stat-card" style="text-decoration:none; background:#e8f6f3;">
+            <h3 style="color:#27ae60;">View</h3>
+            <p>All Users List</p>
+        </a>
+    </div>
+
+    <!-- Global Settings -->
+    <div class="settings-card">
+        <h3 class="section-title">Global Settings</h3>
+        <div class="form-group">
+            <label>Task Reward Amount ($):</label>
+            <input type="number" id="reward" step="0.01" placeholder="Ex: 0.50">
+        </div>
+        <div class="form-group">
+            <label>Minimum Withdraw Limit ($):</label>
+            <input type="number" id="limit" step="0.50" placeholder="Ex: 5.00">
+        </div>
+        <div class="form-group">
+            <label>Task Cooldown (Minutes):</label>
+            <input type="number" id="cooldown" placeholder="Ex: 60">
+        </div>
+        <button class="btn-save" onclick="saveGlobal()">Update Settings</button>
+    </div>
+
+    <!-- Page Management Links -->
+    <h3 class="section-title">Manage Task Pages</h3>
+    <div class="links-grid">
+        <a href="page_1_admin.html" class="link-btn">Page 1 Setup</a>
+        <a href="page_2_admin.html" class="link-btn">Page 2 Setup</a>
+        <a href="page_3_admin.html" class="link-btn">Page 3 Setup</a>
+        <a href="page_4_admin.html" class="link-btn">Page 4 Setup</a>
+        <a href="page_5_admin.html" class="link-btn">Page 5 Setup</a>
+        <a href="page_6_admin.html" class="link-btn">Page 6 Setup</a>
+        <a href="page_7_admin.html" class="link-btn">Page 7 Setup</a>
+        <a href="page_8_admin.html" class="link-btn">Page 8 Setup</a>
+        <a href="page_9_admin.html" class="link-btn">Page 9 Setup</a>
+        <a href="page_10_admin.html" class="link-btn" style="background:#e74c3c;">Page 10 (Code)</a>
+    </div>
+
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
+    authDomain: "task-310c5.firebaseapp.com",
+    projectId: "task-310c5",
+    storageBucket: "task-310c5.firebasestorage.app",
+    messagingSenderId: "503757001786",
+    appId: "1:503757001786:web:3ba0943c3367c273de9103"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Security Check
+  if(localStorage.getItem("adminAuth") !== "true"){
+      window.location.href = "admin_login.html";
+  }
+
+  // Load Settings
+  onValue(ref(db, 'admin_settings'), (snap) => {
+      const data = snap.val() || {};
+      document.getElementById('reward').value = data.task_reward || 0.50;
+      document.getElementById('limit').value = data.min_withdraw || 5.00;
+      document.getElementById('cooldown').value = data.cooldown_minutes || 60;
+  });
+
+  // Count Users
+  onValue(ref(db, 'users'), (snap) => {
+      document.getElementById('total-users').innerText = snap.size || 0;
+  });
+
+  // Count Withdrawals
+  onValue(ref(db, 'withdrawals'), (snap) => {
+      let pending = 0;
+      snap.forEach(child => {
+          if(child.val().status === 'pending') pending++;
+      });
+      document.getElementById('total-withdrawals').innerText = pending;
+  });
+
+  window.saveGlobal = function() {
+      const reward = parseFloat(document.getElementById('reward').value);
+      const limit = parseFloat(document.getElementById('limit').value);
+      const cooldown = parseInt(document.getElementById('cooldown').value);
+
+      update(ref(db, 'admin_settings'), {
+          task_reward: reward,
+          min_withdraw: limit,
+          cooldown_minutes: cooldown
+      }).then(() => alert("Settings Updated!"));
+  }
+
+  window.logout = function() {
+      localStorage.removeItem("adminAuth");
+      window.location.href = "admin_login.html";
+  }
+</script>
+
+</body>
+</html>
