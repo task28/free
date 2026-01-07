@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Page 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #eef2f3; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        /* Information Section */
+        .info-box { background: #e8f5e9; border-left: 5px solid #4caf50; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .info-box h3 { margin: 0 0 5px; color: #2e7d32; }
+        .info-box p { margin: 0; font-size: 13px; color: #555; }
 
+        /* Ads Container */
+        .ad-slot { 
+            width: 100%; min-height: 60px; background: #fafafa; 
+            margin: 15px 0; border: 1px dashed #ccc; border-radius: 8px; 
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+
+        /* Buttons */
+        .task-btn {
+            width: 100%; padding: 14px; background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
+            margin-bottom: 10px; transition: 0.3s;
+        }
+        .task-btn:disabled { background: #cfd8dc; cursor: not-allowed; color: #888; }
+        .task-btn.completed { background: #4caf50; pointer-events: none; }
+
+        .next-btn {
+            display: none; width: 100%; padding: 15px; background: #e74c3c; color: white;
+            border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="info-box">
+        <h3>🚀 SEO & Content Tips</h3>
+        <p>Content marketing is a strategic approach focused on creating and distributing valuable content to attract a defined audience.</p>
+    </div>
+
+    <div id="content-area">Loading Page 2 Tasks...</div>
+
+    <button id="next-page-btn" class="next-btn" onclick="goNext()">Go to Page 3 ➡</button>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
+    authDomain: "task-310c5.firebaseapp.com",
+    projectId: "task-310c5",
+    storageBucket: "task-310c5.firebasestorage.app",
+    messagingSenderId: "503757001786",
+    appId: "1:503757001786:web:3ba0943c3367c273de9103"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  let taskData = {};
+
+  // ডেটা লোড (Page 2 থেকে)
+  get(child(ref(db), 'admin_settings/page_2')).then((snapshot) => {
+      const container = document.getElementById('content-area');
+      container.innerHTML = "";
+      
+      const data = snapshot.val() || {};
+      taskData = data;
+
+      for (let i = 1; i <= 10; i++) {
+          const link = data[`link_${i}`] || "#";
+          const adScript = data[`ad_${i}`] || "";
+
+          // ১. অ্যাড স্লট
+          const adDiv = document.createElement('div');
+          adDiv.className = 'ad-slot';
+          container.appendChild(adDiv);
+
+          // ২. স্ক্রিপ্ট রান (Strong Fix)
+          if (adScript) {
+              adDiv.innerHTML = adScript;
+              executeScript(adDiv);
+          } else {
+              adDiv.innerHTML = "<small>Ad Area</small>";
+          }
+
+          // ৩. বাটন
+          const btn = document.createElement('button');
+          btn.innerText = `Visit Site ${i}`;
+          btn.className = 'task-btn';
+          btn.id = `btn-${i}`;
+          btn.onclick = () => handleTask(i, link);
+          
+          if (i > 1) btn.disabled = true;
+          container.appendChild(btn);
+      }
+  });
+
+  // Script Execution Function
+  function executeScript(element) {
+      const scripts = element.querySelectorAll("script");
+      scripts.forEach((oldScript) => {
+          const newScript = document.createElement("script");
+          Array.from(oldScript.attributes).forEach(attr => {
+              newScript.setAttribute(attr.name, attr.value);
+          });
+          newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+          oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
+  }
+
+  // Task Handler
+  window.handleTask = function(num, url) {
+      if(url === "#" || !url) { alert("Link not set by admin!"); return; }
+
+      window.open(url, '_blank');
+
+      const btn = document.getElementById(`btn-${num}`);
+      let count = 5; // 5 সেকেন্ড টাইমার
+      
+      btn.disabled = true;
+      btn.innerText = `Wait ${count}s...`;
+
+      const timer = setInterval(() => {
+          count--;
+          btn.innerText = `Wait ${count}s...`;
+
+          if (count <= 0) {
+              clearInterval(timer);
+              btn.innerText = "Completed ✔";
+              btn.classList.add("completed");
+
+              if (num < 10) {
+                  const nextBtn = document.getElementById(`btn-${num + 1}`);
+                  if(nextBtn) nextBtn.disabled = false;
+              } else {
+                  // ১০টা শেষ হলে বাটন দেখাবে
+                  document.getElementById('next-page-btn').style.display = 'block';
+              }
+          }
+      }, 1000);
+  }
+
+  // Next Page Function (Changes here)
+  window.goNext = function() {
+      window.location.href = "page3.html";
+  }
+</script>
+
+</body>
+</html>
