@@ -3,383 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>Weekly Program</title>
+    <!-- Google Fonts for Premium Look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1c1c1c 0%, #29323c 100%); /* Dark Premium Theme */
             margin: 0;
-            padding-bottom: 50px;
+            color: #333;
         }
 
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
-            color: white;
-            padding: 25px 20px 60px 20px;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            position: relative;
-        }
-
-        .user-info h3 { margin: 0; font-size: 20px; font-weight: 600; }
-        .user-info p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
-        
-        .logout-btn {
-            position: absolute;
-            top: 25px;
-            right: 20px;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 6px 15px;
+        .login-card {
+            background: #ffffff;
+            padding: 40px 30px;
             border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
-        }
-
-        /* Balance Card */
-        .balance-card {
-            background: white;
-            width: 88%;
-            margin: -40px auto 25px;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            position: relative;
-            z-index: 10;
-        }
-
-        .balance-card h2 { margin: 5px 0; color: #27ae60; font-size: 36px; font-weight: 700; }
-        .balance-card span { color: #95a5a6; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .task-badge { 
-            background: #eef2f3; color: #333; 
-            padding: 5px 12px; border-radius: 15px; 
-            font-size: 12px; display: inline-block; margin-top: 10px; font-weight: 600;
-        }
-
-        .container { width: 90%; margin: 0 auto; }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 18px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            text-align: center;
-            transition: transform 0.2s;
-        }
-        
-        .card h4 { margin: 0 0 15px; color: #444; font-weight: 600; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px; }
-
-        /* Buttons */
-        .btn-start {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(to right, #4facfe, #00f2fe);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
-            transition: 0.3s;
+            max-width: 380px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out;
         }
-        .btn-start:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; color: #fff; }
 
-        .timer-display { font-size: 14px; color: #e74c3c; margin-top: 12px; font-weight: 600; }
+        .login-card h2 {
+            margin: 0 0 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 24px;
+        }
 
-        /* Submit Code Section (Hidden by Default) */
-        #submit-card { display: none; border: 2px solid #27ae60; }
+        .login-card p {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+        }
 
         .input-group input {
             width: 100%;
             padding: 14px;
             border: 2px solid #eef2f7;
             border-radius: 12px;
-            margin-bottom: 12px;
-            outline: none;
-            text-align: center;
-            font-size: 16px;
-            letter-spacing: 2px;
-            background: #f9fbfd;
-        }
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
-        }
-
-        /* Withdraw */
-        .withdraw-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            background-color: #f9fbfd;
+            transition: all 0.3s ease;
             font-family: 'Poppins', sans-serif;
-            background: #fff;
         }
-        .btn-withdraw {
+
+        .input-group input:focus {
+            border-color: #4facfe;
+            background-color: #fff;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn-login {
             width: 100%;
-            padding: 14px;
-            background: #e67e22;
+            padding: 15px;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
             color: white;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
 
-        #msg-box { margin-top: 10px; font-weight: 500; font-size: 14px; }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 15px;
+            display: none;
+            background: #fdeded;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="user-info">
-            <h3 id="display-name">Loading...</h3>
-            <p id="display-phone">...</p>
-        </div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+<div class="login-card">
+    <h2>Weekly Program</h2>
+    <p>Sign in to start your tasks</p>
+    
+    <div class="input-group">
+        <label for="phone">Task28 Number</label>
+        <input type="text" id="phone" placeholder="Ex: 017xxxxxxxx">
     </div>
 
-    <div class="balance-card">
-        <span>Total Balance</span>
-        <h2 id="balance-amount">$0.00</h2>
-        <div class="task-badge">Tasks Done: <span id="completed-tasks">0</span></div>
+    <div class="input-group">
+        <label for="username">Your Name</label>
+        <input type="text" id="username" placeholder="Enter your full name">
     </div>
 
-    <div class="container">
-        
-        <!-- Task Start Section -->
-        <div class="card">
-            <h4>Daily Task</h4>
-            <button id="start-btn" class="btn-start" onclick="startTask()">Start Task</button>
-            <div id="timer-display" class="timer-display"></div>
-        </div>
+    <button class="btn-login" onclick="handleLogin()">Get Started</button>
+    <div id="error-msg" class="error"></div>
+</div>
 
-        <!-- Submit Code Section (Initially Hidden) -->
-        <div class="card" id="submit-card">
-            <h4>Submit Verification Code</h4>
-            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Paste the code from Page 10 to get paid.</p>
-            <div class="input-group">
-                <input type="text" id="task-code" placeholder="Enter Code Here">
-                <button class="btn-submit" onclick="submitCode()">Claim Reward</button>
-            </div>
-            <div id="msg-box"></div>
-        </div>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-        <!-- Withdraw Section -->
-        <div class="card">
-            <h4>Withdraw Earnings</h4>
-            <input type="text" id="w-id" class="withdraw-input" placeholder="Enter Task28 ID">
-            <input type="number" id="w-amount" class="withdraw-input" placeholder="Amount ($)">
-            <button class="btn-withdraw" onclick="requestWithdraw()">Withdraw Money</button>
-            <p style="font-size:12px; color:#999; margin-top:10px;">Min Withdraw: $<span id="min-withdraw">5.00</span></p>
-        </div>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
+    authDomain: "task-310c5.firebaseapp.com",
+    projectId: "task-310c5",
+    storageBucket: "task-310c5.firebasestorage.app",
+    messagingSenderId: "503757001786",
+    appId: "1:503757001786:web:3ba0943c3367c273de9103"
+  };
 
-    </div>
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, get, child, push, remove, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  window.handleLogin = function() {
+      const phone = document.getElementById('phone').value.trim();
+      const name = document.getElementById('username').value.trim();
+      const errorMsg = document.getElementById('error-msg');
+      const btn = document.querySelector('.btn-login');
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAa_T9MDAjSjQ4Us8C4O6Lqzus2d1_LRck",
-            authDomain: "task-310c5.firebaseapp.com",
-            projectId: "task-310c5",
-            storageBucket: "task-310c5.firebasestorage.app",
-            messagingSenderId: "503757001786",
-            appId: "1:503757001786:web:3ba0943c3367c273de9103"
-        };
+      // সাধারণ ভ্যালিডেশন
+      if (!phone || !name) {
+          showError("Please enter both Name and Number.");
+          return;
+      }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+      // ফোন নম্বর ক্লিনিং
+      const cleanPhone = phone.replace(/\D/g, ''); 
+      if(cleanPhone.length < 5) {
+          showError("Enter a valid phone number.");
+          return;
+      }
 
-        const userPhone = localStorage.getItem("userPhone");
-        if (!userPhone) window.location.href = "index.html";
+      // লোডিং ইফেক্ট
+      btn.innerText = "Processing...";
+      btn.disabled = true;
 
-        const userRef = ref(db, 'users/' + userPhone);
+      const dbRef = ref(db);
+      
+      // ডাটাবেস চেক করা
+      get(child(dbRef, `users/${cleanPhone}`)).then((snapshot) => {
+          if (!snapshot.exists()) {
+              // নতুন ইউজার তৈরি
+              set(ref(db, 'users/' + cleanPhone), {
+                  name: name,
+                  phone: cleanPhone,
+                  balance: 0.00,
+                  total_tasks: 0,
+                  last_task_time: 0, 
+                  joined_at: Date.now()
+              });
+          }
 
-        // ১. সাবমিট বক্স শো করার লজিক
-        // আমরা Page 10 এ localStorage.setItem("taskReady", "true") সেট করব।
-        if (localStorage.getItem("taskReady") === "true") {
-            document.getElementById("submit-card").style.display = "block";
-            // সাবমিট অপশন আসলে Start Task বাটন ডিজেবল রাখা ভালো যাতে একসাথে দুইটা না চলে
-            document.getElementById("start-btn").disabled = true;
-            document.getElementById("start-btn").innerText = "Submit Code First";
-        }
+          // লগইন সফল, ডেটা লোকাল স্টোরেজে রাখা
+          localStorage.setItem("userPhone", cleanPhone);
+          localStorage.setItem("userName", name);
 
-        // ২. ইউজারের ডেটা লোড
-        onValue(userRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('display-name').innerText = data.name;
-                document.getElementById('display-phone').innerText = data.phone;
-                document.getElementById('balance-amount').innerText = '$' + parseFloat(data.balance).toFixed(2);
-                document.getElementById('completed-tasks').innerText = data.total_tasks;
-                
-                // যদি সাবমিট বক্স শো না থাকে, তবেই টাইমার চেক করবে
-                if (localStorage.getItem("taskReady") !== "true") {
-                    checkCooldown(data.last_task_time);
-                }
-            }
-        });
+          // হোম পেজে নিয়ে যাওয়া
+          window.location.href = "home.html";
 
-        // ৩. টাইমার লজিক
-        function checkCooldown(lastTime) {
-            get(child(ref(db), 'admin_settings')).then((snap) => {
-                const settings = snap.val() || {};
-                const cooldownMins = settings.cooldown_minutes || 60; 
-                const now = Date.now();
-                const diff = now - lastTime;
-                const cooldownMs = cooldownMins * 60 * 1000;
+      }).catch((error) => {
+          console.error(error);
+          showError("Connection Failed! Please check internet.");
+          btn.innerText = "Get Started";
+          btn.disabled = false;
+      });
+  }
 
-                const startBtn = document.getElementById('start-btn');
-                const timerDisplay = document.getElementById('timer-display');
+  function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.innerText = msg;
+      el.style.display = 'block';
+  }
+</script>
 
-                if (diff < cooldownMs) {
-                    startBtn.disabled = true;
-                    startBtn.innerText = "Wait for Next Task";
-                    
-                    const timeLeft = cooldownMs - diff;
-                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                    timerDisplay.innerText = `Available in: ${minutes}m ${seconds}s`;
-                    
-                    setTimeout(() => checkCooldown(lastTime), 1000);
-                } else {
-                    startBtn.disabled = false;
-                    startBtn.innerText = "Start Task";
-                    timerDisplay.innerText = "";
-                }
-            });
-        }
-
-        window.startTask = function() {
-            window.location.href = "page1.html";
-        }
-
-        // ৪. কোড সাবমিট ফাংশন (আপডেট করা হয়েছে)
-        window.submitCode = function() {
-            const code = document.getElementById('task-code').value.trim();
-            const msgBox = document.getElementById('msg-box');
-            const btn = document.querySelector('.btn-submit');
-
-            if (!code) {
-                msgBox.innerHTML = "<span style='color:red'>Please paste the code!</span>";
-                return;
-            }
-            
-            btn.innerText = "Checking...";
-            btn.disabled = true;
-
-            get(child(ref(db), `generated_codes/${code}`)).then((snapshot) => {
-                if (snapshot.exists()) {
-                    const codeData = snapshot.val();
-
-                    // কোড চেক: অব্যবহৃত কিনা এবং এই ইউজারের জন্যই কিনা
-                    if (codeData.status === "unused" && codeData.user === userPhone) {
-                        
-                        get(child(ref(db), 'admin_settings/task_reward')).then((rSnap) => {
-                            const reward = parseFloat(rSnap.val() || 0.50); 
-                            
-                            get(userRef).then((uSnap) => {
-                                const currentBal = parseFloat(uSnap.val().balance);
-                                const currentTasks = parseInt(uSnap.val().total_tasks);
-
-                                // আপডেট ব্যালেন্স ও টাস্ক কাউন্ট
-                                update(userRef, {
-                                    balance: currentBal + reward,
-                                    total_tasks: currentTasks + 1,
-                                    last_task_time: Date.now() 
-                                });
-
-                                // কোড রিমুভ করে দেওয়া
-                                remove(ref(db, `generated_codes/${code}`));
-
-                                // সাকসেস মেসেজ এবং রিসেট
-                                alert("Congratulations! $" + reward + " Added.");
-                                
-                                // লোকাল স্টোরেজ থেকে ফ্ল্যাগ ডিলিট যাতে সাবমিট বক্স আর না দেখায়
-                                localStorage.removeItem("taskReady");
-                                
-                                // পেজ রিলোড দিলে UI আপডেট হয়ে যাবে
-                                window.location.reload();
-                            });
-                        });
-                    } else {
-                        msgBox.innerHTML = "<span style='color:red'>Invalid or Used Code!</span>";
-                        btn.innerText = "Try Again";
-                        btn.disabled = false;
-                    }
-                } else {
-                    msgBox.innerHTML = "<span style='color:red'>Wrong Code!</span>";
-                    btn.innerText = "Try Again";
-                    btn.disabled = false;
-                }
-            });
-        }
-
-        window.requestWithdraw = function() {
-            const wid = document.getElementById('w-id').value;
-            const amount = parseFloat(document.getElementById('w-amount').value);
-            
-            if(!wid || !amount) { alert("Fill all fields"); return; }
-
-            get(child(ref(db), 'admin_settings/min_withdraw')).then((snap) => {
-                const limit = parseFloat(snap.val() || 5.00);
-                
-                get(userRef).then((userSnap) => {
-                    const myBal = parseFloat(userSnap.val().balance);
-
-                    if (myBal >= amount && amount >= limit) {
-                        const withdrawRef = ref(db, 'withdrawals');
-                        const newWithdraw = push(withdrawRef);
-                        set(newWithdraw, {
-                            user: userPhone,
-                            name: userSnap.val().name,
-                            task_id: wid,
-                            amount: amount,
-                            status: "pending",
-                            date: Date.now()
-                        });
-                        update(userRef, { balance: myBal - amount });
-                        alert("Withdrawal request sent!");
-                        window.location.reload();
-                    } else {
-                        alert(`Insufficient balance or below limit ($${limit})`);
-                    }
-                });
-            });
-        }
-
-        window.logout = function() {
-            localStorage.removeItem("userPhone");
-            window.location.href = "index.html";
-        }
-
-        window.startTask = startTask;
-        window.submitCode = submitCode;
-        window.requestWithdraw = requestWithdraw;
-        window.logout = logout;
-    </script>
 </body>
 </html>
