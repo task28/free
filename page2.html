@@ -65,7 +65,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  let taskData = {};
+  
+  // ট্র্যাকিং ভেরিয়েবল
+  let activeTaskNum = null;
+  let taskStartTime = 0;
+  const REQUIRED_TIME = 10; // ১০ সেকেন্ড সময় সেট করা হলো
 
   // ডেটা লোড (Page 2 থেকে)
   get(child(ref(db), 'admin_settings/page_2')).then((snapshot) => {
@@ -73,7 +77,6 @@
       container.innerHTML = "";
       
       const data = snapshot.val() || {};
-      taskData = data;
 
       for (let i = 1; i <= 10; i++) {
           const link = data[`link_${i}`] || "#";
@@ -84,7 +87,7 @@
           adDiv.className = 'ad-slot';
           container.appendChild(adDiv);
 
-          // ২. স্ক্রিপ্ট রান (Strong Fix)
+          // ২. স্ক্রিপ্ট রান
           if (adScript) {
               adDiv.innerHTML = adScript;
               executeScript(adDiv);
@@ -97,14 +100,16 @@
           btn.innerText = `Visit Site ${i}`;
           btn.className = 'task-btn';
           btn.id = `btn-${i}`;
-          btn.onclick = () => handleTask(i, link);
+          
+          // বাটন ফাংশন সেট করা
+          btn.onclick = function() { startTask(i, link); };
           
           if (i > 1) btn.disabled = true;
           container.appendChild(btn);
       }
   });
 
-  // Script Execution Function
+  // স্ক্রিপ্ট এক্সিকিউশন
   function executeScript(element) {
       const scripts = element.querySelectorAll("script");
       scripts.forEach((oldScript) => {
@@ -117,39 +122,67 @@
       });
   }
 
-  // Task Handler
-  window.handleTask = function(num, url) {
+  // --- নতুন লজিক শুরু ---
+
+  // ১. টাস্ক শুরু করার ফাংশন
+  window.startTask = function(num, url) {
       if(url === "#" || !url) { alert("Link not set by admin!"); return; }
 
+      // লিংক ওপেন করা
       window.open(url, '_blank');
 
+      // ট্র্যাকিং শুরু
+      activeTaskNum = num;
+      taskStartTime = Date.now(); // বর্তমান সময় নোট করা
+
       const btn = document.getElementById(`btn-${num}`);
-      let count = 5; // 5 সেকেন্ড টাইমার
-      
-      btn.disabled = true;
-      btn.innerText = `Wait ${count}s...`;
-
-      const timer = setInterval(() => {
-          count--;
-          btn.innerText = `Wait ${count}s...`;
-
-          if (count <= 0) {
-              clearInterval(timer);
-              btn.innerText = "Completed ✔";
-              btn.classList.add("completed");
-
-              if (num < 10) {
-                  const nextBtn = document.getElementById(`btn-${num + 1}`);
-                  if(nextBtn) nextBtn.disabled = false;
-              } else {
-                  // ১০টা শেষ হলে বাটন দেখাবে
-                  document.getElementById('next-page-btn').style.display = 'block';
-              }
-          }
-      }, 1000);
+      btn.innerText = "Checking... Wait 10s";
+      btn.disabled = true; // বাটন ডিজেবল রাখা
   }
 
-  // Next Page Function (Changes here)
+  // ২. ইউজার যখন ট্যাবে ফিরে আসবে (Visibility Change Event)
+  document.addEventListener("visibilitychange", () => {
+      // যদি ট্যাব দৃশ্যমান হয় এবং কোনো টাস্ক একটিভ থাকে
+      if (document.visibilityState === "visible" && activeTaskNum !== null) {
+          checkResult();
+      }
+  });
+
+  // ৩. সময় চেক করার ফাংশন
+  function checkResult() {
+      const currentTime = Date.now();
+      const timeSpent = (currentTime - taskStartTime) / 1000; // সেকেন্ডে রূপান্তর
+      const btn = document.getElementById(`btn-${activeTaskNum}`);
+
+      if (timeSpent >= REQUIRED_TIME) {
+          // ১০ সেকেন্ড বা বেশি হলে -> Success
+          btn.innerText = "Completed ✔";
+          btn.classList.add("completed");
+
+          // পরের বাটন আনলক
+          if (activeTaskNum < 10) {
+              const nextBtn = document.getElementById(`btn-${activeTaskNum + 1}`);
+              if(nextBtn) nextBtn.disabled = false;
+          } else {
+              // সব শেষ হলে নেক্সট পেজ বাটন শো
+              document.getElementById('next-page-btn').style.display = 'block';
+          }
+      } else {
+          // ১০ সেকেন্ডের কম হলে -> Fail
+          alert(`You came back too early! You stayed only ${Math.floor(timeSpent)} seconds. Please wait 10 seconds.`);
+          
+          // বাটন রিসেট (আবার ক্লিক করতে হবে)
+          btn.innerText = `Visit Site ${activeTaskNum}`;
+          btn.classList.remove("completed");
+          btn.disabled = false;
+      }
+
+      // ট্র্যাকিং রিসেট
+      activeTaskNum = null;
+      taskStartTime = 0;
+  }
+
+  // Next Page Function
   window.goNext = function() {
       window.location.href = "page3.html";
   }
