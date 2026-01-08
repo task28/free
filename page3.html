@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Page</title>
+    <title>Task Page 3</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background: #eef2f3; margin: 0; padding: 20px; }
@@ -22,8 +22,8 @@
 
 <div class="container">
     <div class="info-box">
-        <h3 id="page-heading">Task Page</h3>
-        <p>Complete all tasks and view ads to proceed to the next step.</p>
+        <h3 id="page-heading">Task Page 3</h3>
+        <p>You must stay on the ad site for at least 10 seconds to complete the task.</p>
     </div>
 
     <div id="content-area">Loading Tasks...</div>
@@ -49,12 +49,15 @@
   const db = getDatabase(app);
 
   // ============================================
-  // ১. বর্তমান পেজ নম্বর দিন
+  // পেজ কনফিগারেশন
   const CURRENT_PAGE_NUM = 3; 
-  
-  // ২. পরের পেজের ফাইলের নাম দিন
-  const NEXT_PAGE_LINK = "page4.html";
+  const NEXT_PAGE_LINK = "page4.html"; // পরের পেজের লিংক
   // ============================================
+
+  // ট্র্যাকিং ভেরিয়েবল
+  let activeTaskNum = null;
+  let taskStartTime = 0;
+  const REQUIRED_TIME = 10; // ১০ সেকেন্ড সময়
 
   document.title = `Task Page ${CURRENT_PAGE_NUM}`;
   document.getElementById('page-heading').innerText = `Page ${CURRENT_PAGE_NUM} Tasks`;
@@ -88,14 +91,15 @@
           btn.innerText = `Visit Site ${i}`;
           btn.className = 'task-btn';
           btn.id = `btn-${i}`;
-          btn.onclick = () => handleTask(i, link);
+          
+          // বাটন ফাংশন সেট করা
+          btn.onclick = function() { startTask(i, link); };
           
           if (i > 1) btn.disabled = true;
           container.appendChild(btn);
       }
   });
 
-  // স্ক্রিপ্ট রান করানো (Adsterra/Google Ads Fix)
   function executeScript(element) {
       const scripts = element.querySelectorAll("script");
       scripts.forEach((oldScript) => {
@@ -106,34 +110,64 @@
       });
   }
 
-  // টাস্ক হ্যান্ডলার
-  window.handleTask = function(num, url) {
-      if(url === "#" || !url) { alert("Link not set!"); return; }
+  // --- নতুন লজিক শুরু ---
 
+  // ১. টাস্ক শুরু করার ফাংশন
+  window.startTask = function(num, url) {
+      if(url === "#" || !url) { alert("Link not set by admin!"); return; }
+
+      // লিংক ওপেন
       window.open(url, '_blank');
 
+      // ট্র্যাকিং শুরু
+      activeTaskNum = num;
+      taskStartTime = Date.now(); // বর্তমান সময় সেভ করা
+
       const btn = document.getElementById(`btn-${num}`);
-      let count = 5; // 5 সেকেন্ড
-      btn.disabled = true;
-      btn.innerText = `Wait ${count}s...`;
+      btn.innerText = "Checking... Wait 10s";
+      btn.disabled = true; // বাটন ডিজেবল রাখা
+  }
 
-      const timer = setInterval(() => {
-          count--;
-          btn.innerText = `Wait ${count}s...`;
+  // ২. ইউজার যখন ট্যাবে ফিরে আসবে (Visibility Change Event)
+  document.addEventListener("visibilitychange", () => {
+      // যদি ট্যাব দৃশ্যমান হয় এবং কোনো টাস্ক একটিভ থাকে
+      if (document.visibilityState === "visible" && activeTaskNum !== null) {
+          checkResult();
+      }
+  });
 
-          if (count <= 0) {
-              clearInterval(timer);
-              btn.innerText = "Completed ✔";
-              btn.classList.add("completed");
+  // ৩. সময় চেক করার ফাংশন
+  function checkResult() {
+      const currentTime = Date.now();
+      const timeSpent = (currentTime - taskStartTime) / 1000; // সেকেন্ডে রূপান্তর
+      const btn = document.getElementById(`btn-${activeTaskNum}`);
 
-              if (num < 10) {
-                  const nextBtn = document.getElementById(`btn-${num + 1}`);
-                  if(nextBtn) nextBtn.disabled = false;
-              } else {
-                  document.getElementById('next-page-btn').style.display = 'block';
-              }
+      if (timeSpent >= REQUIRED_TIME) {
+          // ১০ সেকেন্ড বা বেশি হলে -> Success
+          btn.innerText = "Completed ✔";
+          btn.classList.add("completed");
+
+          // পরের বাটন আনলক
+          if (activeTaskNum < 10) {
+              const nextBtn = document.getElementById(`btn-${activeTaskNum + 1}`);
+              if(nextBtn) nextBtn.disabled = false;
+          } else {
+              // সব শেষ হলে নেক্সট পেজ বাটন শো
+              document.getElementById('next-page-btn').style.display = 'block';
           }
-      }, 1000);
+      } else {
+          // ১০ সেকেন্ডের কম হলে -> Fail
+          alert(`Failed! You stayed only ${Math.floor(timeSpent)} seconds. You must stay for 10 seconds.`);
+          
+          // বাটন রিসেট (আবার ক্লিক করতে হবে)
+          btn.innerText = `Visit Site ${activeTaskNum}`;
+          btn.classList.remove("completed");
+          btn.disabled = false;
+      }
+
+      // ট্র্যাকিং রিসেট
+      activeTaskNum = null;
+      taskStartTime = 0;
   }
 
   // নেক্সট পেজ ফাংশন
