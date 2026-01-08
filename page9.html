@@ -22,7 +22,7 @@
 <div class="container">
     <div class="info-box">
         <h3 id="page-heading">Page 9 Tasks</h3>
-        <p>Almost done! Complete tasks to proceed to the Final Step.</p>
+        <p>You must stay on the ad site for at least 10 seconds to complete the task.</p>
     </div>
 
     <div id="content-area">Loading Tasks...</div>
@@ -49,8 +49,12 @@
 
   // পেজ ৯ এর সেটিংস
   const CURRENT_PAGE_NUM = 9; 
-  // এই পেজ শেষ হলে Page 10 এ যাবে
   const NEXT_PAGE_LINK = "page10.html";
+
+  // ট্র্যাকিং ভেরিয়েবল
+  let activeTaskNum = null;
+  let taskStartTime = 0;
+  const REQUIRED_TIME = 10; // ১০ সেকেন্ড সময়
 
   const dbPath = `admin_settings/page_${CURRENT_PAGE_NUM}`;
 
@@ -79,7 +83,9 @@
           btn.innerText = `Visit Site ${i}`;
           btn.className = 'task-btn';
           btn.id = `btn-${i}`;
-          btn.onclick = () => handleTask(i, link);
+          
+          // বাটন ফাংশন সেট করা (নতুন লজিক)
+          btn.onclick = function() { startTask(i, link); };
           
           if (i > 1) btn.disabled = true;
           container.appendChild(btn);
@@ -96,33 +102,64 @@
       });
   }
 
-  window.handleTask = function(num, url) {
+  // --- ১০ সেকেন্ড লজিক শুরু ---
+
+  // ১. টাস্ক শুরু
+  window.startTask = function(num, url) {
       if(url === "#" || !url) { alert("Link not set!"); return; }
 
+      // লিংক ওপেন
       window.open(url, '_blank');
 
+      // ট্র্যাকিং শুরু
+      activeTaskNum = num;
+      taskStartTime = Date.now(); // বর্তমান সময় সেভ
+
       const btn = document.getElementById(`btn-${num}`);
-      let count = 5; 
-      btn.disabled = true;
-      btn.innerText = `Wait ${count}s...`;
+      btn.innerText = "Checking... Wait 10s";
+      btn.disabled = true; // বাটন লক
+  }
 
-      const timer = setInterval(() => {
-          count--;
-          btn.innerText = `Wait ${count}s...`;
+  // ২. ইউজার যখন ব্যাক করবে (Visibility Change)
+  document.addEventListener("visibilitychange", () => {
+      // যদি ট্যাব দৃশ্যমান হয় এবং কোনো টাস্ক চালু থাকে
+      if (document.visibilityState === "visible" && activeTaskNum !== null) {
+          checkResult();
+      }
+  });
 
-          if (count <= 0) {
-              clearInterval(timer);
-              btn.innerText = "Completed ✔";
-              btn.classList.add("completed");
+  // ৩. ফলাফল যাচাই
+  function checkResult() {
+      const currentTime = Date.now();
+      const timeSpent = (currentTime - taskStartTime) / 1000; // সেকেন্ডে রূপান্তর
+      const btn = document.getElementById(`btn-${activeTaskNum}`);
 
-              if (num < 10) {
-                  const nextBtn = document.getElementById(`btn-${num + 1}`);
-                  if(nextBtn) nextBtn.disabled = false;
-              } else {
-                  document.getElementById('next-page-btn').style.display = 'block';
-              }
+      if (timeSpent >= REQUIRED_TIME) {
+          // ১০ সেকেন্ড বা বেশি হলে -> Success
+          btn.innerText = "Completed ✔";
+          btn.classList.add("completed");
+
+          // পরের বাটন আনলক
+          if (activeTaskNum < 10) {
+              const nextBtn = document.getElementById(`btn-${activeTaskNum + 1}`);
+              if(nextBtn) nextBtn.disabled = false;
+          } else {
+              // সব শেষ হলে নেক্সট পেজ বাটন শো
+              document.getElementById('next-page-btn').style.display = 'block';
           }
-      }, 1000);
+      } else {
+          // ১০ সেকেন্ডের কম হলে -> Fail
+          alert(`Task Failed! You returned too early (${Math.floor(timeSpent)}s). Please stay for 10 seconds.`);
+          
+          // বাটন রিসেট
+          btn.innerText = `Visit Site ${activeTaskNum}`;
+          btn.classList.remove("completed");
+          btn.disabled = false;
+      }
+
+      // ট্র্যাকিং রিসেট
+      activeTaskNum = null;
+      taskStartTime = 0;
   }
 
   window.goNext = function() {
