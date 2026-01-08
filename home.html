@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Monetag Verification -->
+    <meta name="monetag" content="6d6580fd4b9619319aa6ca71e51ab584">
     <title>User Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -188,7 +190,7 @@
         <!-- Withdraw Section -->
         <div class="card">
             <h4>Withdraw Earnings</h4>
-            <input type="text" id="w-id" class="withdraw-input" placeholder="Enter Task28 ID">
+            <input type="text" id="w-id" class="withdraw-input" placeholder="Enter Payment Number (Bkash/Nagad)">
             <input type="number" id="w-amount" class="withdraw-input" placeholder="Amount ($)">
             <button class="btn-withdraw" onclick="requestWithdraw()">Withdraw Money</button>
             <p style="font-size:12px; color:#999; margin-top:10px;">Min Withdraw: $<span id="min-withdraw">5.00</span></p>
@@ -213,41 +215,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const userPhone = localStorage.getItem("userPhone");
-        if (!userPhone) window.location.href = "index.html";
+        // FIX: Used "locked_phone" to match your Login Page
+        const userPhone = localStorage.getItem("locked_phone");
+        
+        // Redirect if not logged in
+        if (!userPhone) {
+            window.location.href = "index.html";
+        }
 
         const userRef = ref(db, 'users/' + userPhone);
 
-        // ১. সাবমিট বক্স শো করার লজিক
-        // আমরা Page 10 এ localStorage.setItem("taskReady", "true") সেট করব।
+        // 1. Submit Box Logic
+        // This checks if the user finished Page 10
         if (localStorage.getItem("taskReady") === "true") {
             document.getElementById("submit-card").style.display = "block";
-            // সাবমিট অপশন আসলে Start Task বাটন ডিজেবল রাখা ভালো যাতে একসাথে দুইটা না চলে
             document.getElementById("start-btn").disabled = true;
             document.getElementById("start-btn").innerText = "Submit Code First";
         }
 
-        // ২. ইউজারের ডেটা লোড
+        // 2. Load User Data
         onValue(userRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 document.getElementById('display-name').innerText = data.name;
                 document.getElementById('display-phone').innerText = data.phone;
                 document.getElementById('balance-amount').innerText = '$' + parseFloat(data.balance).toFixed(2);
-                document.getElementById('completed-tasks').innerText = data.total_tasks;
+                document.getElementById('completed-tasks').innerText = data.total_tasks || 0;
                 
-                // যদি সাবমিট বক্স শো না থাকে, তবেই টাইমার চেক করবে
+                // Only check cooldown if they don't have a code to submit
                 if (localStorage.getItem("taskReady") !== "true") {
-                    checkCooldown(data.last_task_time);
+                    checkCooldown(data.last_task_time || 0);
                 }
             }
         });
 
-        // ৩. টাইমার লজিক
+        // 3. Cooldown Timer Logic
         function checkCooldown(lastTime) {
             get(child(ref(db), 'admin_settings')).then((snap) => {
                 const settings = snap.val() || {};
-                const cooldownMins = settings.cooldown_minutes || 60; 
+                const cooldownMins = settings.cooldown_minutes || 60; // Default 60 mins
                 const now = Date.now();
                 const diff = now - lastTime;
                 const cooldownMs = cooldownMins * 60 * 1000;
@@ -264,6 +270,7 @@
                     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
                     timerDisplay.innerText = `Available in: ${minutes}m ${seconds}s`;
                     
+                    // Update timer every second
                     setTimeout(() => checkCooldown(lastTime), 1000);
                 } else {
                     startBtn.disabled = false;
@@ -274,10 +281,11 @@
         }
 
         window.startTask = function() {
+            // YOU NEED TO CREATE "page1.html"
             window.location.href = "page1.html";
         }
 
-        // ৪. কোড সাবমিট ফাংশন (আপডেট করা হয়েছে)
+        // 4. Submit Code Logic
         window.submitCode = function() {
             const code = document.getElementById('task-code').value.trim();
             const msgBox = document.getElementById('msg-box');
@@ -291,11 +299,12 @@
             btn.innerText = "Checking...";
             btn.disabled = true;
 
+            // Verify Code in Firebase
             get(child(ref(db), `generated_codes/${code}`)).then((snapshot) => {
                 if (snapshot.exists()) {
                     const codeData = snapshot.val();
 
-                    // কোড চেক: অব্যবহৃত কিনা এবং এই ইউজারের জন্যই কিনা
+                    // Check if unused and belongs to this user
                     if (codeData.status === "unused" && codeData.user === userPhone) {
                         
                         get(child(ref(db), 'admin_settings/task_reward')).then((rSnap) => {
@@ -303,25 +312,23 @@
                             
                             get(userRef).then((uSnap) => {
                                 const currentBal = parseFloat(uSnap.val().balance);
-                                const currentTasks = parseInt(uSnap.val().total_tasks);
+                                const currentTasks = parseInt(uSnap.val().total_tasks || 0);
 
-                                // আপডেট ব্যালেন্স ও টাস্ক কাউন্ট
+                                // Update Balance
                                 update(userRef, {
                                     balance: currentBal + reward,
                                     total_tasks: currentTasks + 1,
                                     last_task_time: Date.now() 
                                 });
 
-                                // কোড রিমুভ করে দেওয়া
+                                // Remove Code from DB
                                 remove(ref(db, `generated_codes/${code}`));
 
-                                // সাকসেস মেসেজ এবং রিসেট
                                 alert("Congratulations! $" + reward + " Added.");
                                 
-                                // লোকাল স্টোরেজ থেকে ফ্ল্যাগ ডিলিট যাতে সাবমিট বক্স আর না দেখায়
+                                // Reset LocalStorage
                                 localStorage.removeItem("taskReady");
                                 
-                                // পেজ রিলোড দিলে UI আপডেট হয়ে যাবে
                                 window.location.reload();
                             });
                         });
@@ -356,7 +363,7 @@
                         set(newWithdraw, {
                             user: userPhone,
                             name: userSnap.val().name,
-                            task_id: wid,
+                            payment_number: wid,
                             amount: amount,
                             status: "pending",
                             date: Date.now()
@@ -372,10 +379,11 @@
         }
 
         window.logout = function() {
-            localStorage.removeItem("userPhone");
+            // Note: Login page prevents changing number even after logout (Security)
             window.location.href = "index.html";
         }
 
+        // Attach functions to window for HTML access
         window.startTask = startTask;
         window.submitCode = submitCode;
         window.requestWithdraw = requestWithdraw;
