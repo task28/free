@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Monetag Verification -->
+    <meta name="monetag" content="6d6580fd4b9619319aa6ca71e51ab584">
     <title>Weekly Program Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -25,7 +27,6 @@
             width: 100%;
             max-width: 380px;
             text-align: center;
-            animation: fadeIn 0.8s ease-in-out;
         }
         .login-card h2 { margin: 0 0 10px; color: #2c3e50; font-weight: 600; font-size: 24px; }
         .login-card p { color: #7f8c8d; font-size: 14px; margin-bottom: 30px; }
@@ -38,22 +39,18 @@
         }
         .input-group input:focus {
             border-color: #4facfe; background-color: #fff; outline: none;
-            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
         }
         .btn-login {
             width: 100%; padding: 15px; background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
             color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+            cursor: pointer; transition: transform 0.2s; margin-top: 10px;
         }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 172, 254, 0.6); }
-        .btn-login:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
-        
+        .btn-login:hover { transform: translateY(-2px); }
+        .btn-login:disabled { background: #ccc; cursor: not-allowed; transform: none; }
         .error {
             color: #e74c3c; font-size: 13px; margin-top: 15px; display: none;
-            background: #fdeded; padding: 10px; border-radius: 8px; border: 1px solid #e74c3c;
+            background: #fdeded; padding: 10px; border-radius: 8px;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -92,13 +89,11 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // পেজ লোড হওয়ার সাথে সাথে চেক করবে এই ডিভাইসে আগে একাউন্ট খোলা আছে কিনা
   window.onload = function() {
       const savedPhone = localStorage.getItem("locked_phone");
       if(savedPhone) {
           document.getElementById('phone').value = savedPhone;
-          document.getElementById('phone').readOnly = true; // নাম্বার চেঞ্জ করা যাবে না
-          showError(`Device Locked to: ${savedPhone}. You cannot use another number.`);
+          document.getElementById('phone').readOnly = true;
       }
   }
 
@@ -109,54 +104,29 @@
       const name = nameInput.value.trim();
       const btn = document.querySelector('.btn-login');
 
-      // 1. ইনপুট ভ্যালিডেশন
-      if (!phone || !name) {
-          showError("Please enter both Name and Number.");
-          return;
-      }
-      if (phone.length < 11) {
-          showError("Enter a valid 11-digit phone number.");
-          return;
-      }
+      if (!phone || !name) { showError("Please enter both Name and Number."); return; }
+      if (phone.length < 11) { showError("Enter a valid 11-digit phone number."); return; }
 
-      // 2. One Device One Account চেক
       const savedPhone = localStorage.getItem("locked_phone");
-      
-      // যদি ডিভাইসে আগে একাউন্ট থাকে এবং ইউজার অন্য নাম্বার দেয়
       if (savedPhone && savedPhone !== phone) {
-          showError("🚫 This device is already registered with another number (" + savedPhone + "). You cannot switch accounts.");
-          return;
+          showError("This device is locked to " + savedPhone); return;
       }
 
-      // লোডিং শুরু
       btn.innerText = "Checking...";
       btn.disabled = true;
-      document.getElementById('error-msg').style.display = 'none';
 
       const dbRef = ref(db);
-      
-      // 3. ডাটাবেস চেক করা
       get(child(dbRef, `users/${phone}`)).then((snapshot) => {
-          
           if (snapshot.exists()) {
-              // --- OLD ID LOGIN LOGIC ---
               const userData = snapshot.val();
-              
-              // নাম যাচাই করা (Case Insensitive)
               if (userData.name.toLowerCase() === name.toLowerCase()) {
-                  // নাম মিলেছে -> লগইন সফল
                   loginSuccess(phone, userData.name);
               } else {
-                  // নাম মিলেনি
-                  showError(`❌ Login Failed! This number is registered to "${userData.name}". Please enter the correct name.`);
+                  showError(`Wrong name! Number registered to "${userData.name}"`);
                   btn.innerText = "Login / Register";
                   btn.disabled = false;
               }
-
           } else {
-              // --- NEW ACCOUNT LOGIC ---
-              
-              // যদি ডিভাইসে কোনো একাউন্ট না থাকে, কেবল তখনই নতুন একাউন্ট হবে
               if (!savedPhone) {
                   set(ref(db, 'users/' + phone), {
                       name: name,
@@ -164,30 +134,21 @@
                       balance: 0.00,
                       total_tasks: 0,
                       joined_at: Date.now()
-                  }).then(() => {
-                      loginSuccess(phone, name);
-                  });
+                  }).then(() => loginSuccess(phone, name));
               } else {
-                  // এটা সাধারণত হবে না, কিন্তু হ্যাকিং আটকাতে
                   showError("Device validation failed.");
                   btn.disabled = false;
               }
           }
-
       }).catch((error) => {
-          console.error(error);
-          showError("Connection Failed! Please check internet.");
+          showError("Connection Failed!");
           btn.innerText = "Login / Register";
           btn.disabled = false;
       });
   }
 
   function loginSuccess(phone, name) {
-      // ডিভাইসে নাম্বার লক করে দেওয়া হচ্ছে
       localStorage.setItem("locked_phone", phone);
-      localStorage.setItem("userName", name);
-      
-      // হোম পেজে রিডাইরেক্ট
       window.location.href = "home.html";
   }
 
@@ -197,6 +158,5 @@
       el.style.display = 'block';
   }
 </script>
-
 </body>
 </html>
